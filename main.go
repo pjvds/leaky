@@ -23,7 +23,7 @@ type Diff struct {
 	Before Snapshot
 	After  Snapshot
 
-	Change
+	Change Change
 }
 
 type Change struct {
