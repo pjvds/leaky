@@ -6,7 +6,11 @@ import (
 	"os/signal"
 	"runtime"
 	"time"
+
+	"github.com/pjvds/tidy"
 )
+
+var log = tidy.GetLogger()
 
 type Monitor struct {
 	closed  chan struct{}
@@ -67,8 +71,14 @@ func (this Monitor) do() {
 			lastNumGC = stats.NumGC
 		}
 
-		fmt.Printf("gc: %v\n", stats.NumGC)
-
+		log.Withs(tidy.Fields{
+			"NumGC":       stats.NumGC,
+			"Alloc":       stats.Alloc,
+			"HeapAlloc":   stats.HeapAlloc,
+			"TotalAlloc":  stats.TotalAlloc,
+			"Mallocs":     stats.Mallocs,
+			"TimeSinceGC": time.Now().Sub(time.Unix(0, int64(stats.LastGC))),
+		}).Debug("GC ran")
 	}
 }
 
