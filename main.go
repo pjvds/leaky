@@ -36,31 +36,31 @@ type nothing struct {
 	field int32
 }
 
-func trapGc(callback func()) *byte {
-	b := new(byte)
-	runtime.SetFinalizer(b, func(_ *byte) {
-		fmt.Printf("FOOBAR TRAP!")
-		callback()
-	})
+func trapGc() runtime.MemStats {
+	read := make(chan runtime.MemStats)
 
-	return b
+	go func() *byte {
+		ref := new(byte)
+		runtime.SetFinalizer(ref, func(_ *byte) {
+			stats := new(runtime.MemStats)
+			runtime.ReadMemStats(stats)
+
+			read <- *stats
+		})
+
+		return ref
+	}()
+
+	return <-read
 }
 
 func (this Monitor) do() {
 	defer close(this.closed)
-
-	var stats runtime.MemStats
 	var lastNumGC uint32
 
-	gc := make(chan struct{})
-
 	for {
-		go trapGc(func() {
-			runtime.ReadMemStats(&stats)
-			gc <- struct{}{}
-		})
+		stats := trapGc()
 
-		<-gc
 		if lastNumGC == stats.NumGC {
 			fmt.Printf("FAIL: lastNumGC & NumGC are the same: %v", lastNumGC)
 		} else {
