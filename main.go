@@ -40,6 +40,8 @@ type nothing struct {
 	field int32
 }
 
+// Reads the memory stats as soon as a GC cycle happened.
+// The latency is between 100µs-500µs (0.1ms-0.5ms).
 func trapGc() runtime.MemStats {
 	read := make(chan runtime.MemStats)
 
