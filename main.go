@@ -68,7 +68,10 @@ func (this Monitor) do() {
 		stats := trapGc()
 
 		if lastNumGC == stats.NumGC {
-			fmt.Printf("FAIL: lastNumGC & NumGC are the same: %v", lastNumGC)
+			log.Withs(tidy.Fields{
+				"LastNumGC": lastNumGC,
+				"NumGC":     stats.NumGC,
+			}).Error("unexpected numgc value")
 		} else {
 			lastNumGC = stats.NumGC
 		}
