@@ -17,6 +17,15 @@ type tail struct {
 	size  int
 }
 
+func newTail(size int) tail {
+	return tail{
+		items: make([]Snapshot, size, size),
+		index: 0,
+		count: 0,
+		size:  size,
+	}
+}
+
 func (this tail) Push(s Snapshot) tail {
 	this.index++
 
