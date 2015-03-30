@@ -10,9 +10,33 @@ import (
 	"github.com/pjvds/tidy"
 )
 
+type tail struct {
+	items []Snapshot
+	index int
+	count int
+	size  int
+}
+
+func (this tail) Push(s Snapshot) tail {
+	this.index++
+
+	if index >= this.size {
+		index = 0
+	}
+
+	if this.count < this.size {
+		this.count++
+	}
+
+	this.items[s]
+	return this
+}
+
 var log = tidy.GetLogger()
 
 type Monitor struct {
+	Leaky chan<- Leaky
+
 	closed  chan struct{}
 	closing chan struct{}
 }
