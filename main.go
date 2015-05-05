@@ -29,16 +29,24 @@ func newTail(size int) tail {
 func (this tail) Push(s Snapshot) tail {
 	this.index++
 
-	if index >= this.size {
-		index = 0
+	if this.index >= this.size {
+		this.index = 0
 	}
 
 	if this.count < this.size {
 		this.count++
 	}
 
-	this.items[s]
+	this.items[this.index] = s
 	return this
+}
+
+func (this tail) Foreach(callback func(snapshot Snapshot)) {
+	for index := 0; index < this.count; index++ {
+		relativeIndex := (this.index + index) % this.size
+		snapshot := this.items[relativeIndex]
+		callback(snapshot)
+	}
 }
 
 var log = tidy.GetLogger()
@@ -93,6 +101,7 @@ func trapGc() runtime.MemStats {
 func (this Monitor) do() {
 	defer close(this.closed)
 	var lastNumGC uint32
+	var tail tail
 
 	for {
 		stats := trapGc()
@@ -105,6 +114,9 @@ func (this Monitor) do() {
 		} else {
 			lastNumGC = stats.NumGC
 		}
+
+		snapshot := snapshotFromStats(stats)
+		tail = tail.Push(snapshot)
 
 		log.Withs(tidy.Fields{
 			"NumGC":       stats.NumGC,
